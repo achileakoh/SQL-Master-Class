@@ -1,0 +1,791 @@
+SELECT first_name, last_name, email FROM customer;
+
+--DISTINCT & COUNT statements plus combinations of both
+SELECT DISTINCT (rating) FROM film;
+
+SELECT * FROM payment;
+SELECT COUNT (*) FROM payment;
+SELECT COUNT (amount) FROM payment;
+SELECT DISTINCT amount FROM payment;
+SELECT COUNT(DISTINCT(amount)) FROM payment;
+
+--WHERE statements using logical operators (AND,OR)
+SELECT * FROM customer
+WHERE first_name = 'Jared';
+
+SELECT * FROM film
+WHERE rental_rate > '4'
+AND replacement_cost > '19.99'
+AND rating = 'R';
+
+SELECT COUNT(*) FROM film
+WHERE rental_rate > '4'
+AND replacement_cost > '19.99'
+AND rating = 'R';
+
+SELECT * FROM film
+WHERE rating = 'R'
+OR rating = 'PG-13'
+
+SELECT * FROM film
+WHERE rating != 'R'
+
+SELECT customer_id, amount FROM payment
+WHERE "customer_id" >=342
+AND "amount" >=5.99;
+
+
+SELECT email FROM customer
+WHERE first_name = 'Nancy'
+AND last_name = 'Thomas';
+
+SELECT description FROM film
+WHERE title = 'Outlaw Hanky';
+
+SELECT phone FROM address
+WHERE address = '259 Ipoh Drive'
+
+--ORDER BY Example
+SELECT store_id, first_name, last_name FROM customer
+ORDER BY store_id DESC, first_name ASC
+
+--LIMIT Example combined with ORDER BY
+SELECT * FROM payment
+WHERE amount > 0
+ORDER BY payment_date DESC
+LIMIT 10;
+
+SELECT customer_id FROM payment
+ORDER BY payment_date ASC
+LIMIT 10;
+
+SELECT title, length FROM film
+ORDER BY length ASC
+LIMIT 5;
+
+SELECT COUNT (title) FROM film
+WHERE length <= 50;
+
+--BETWEEN
+SELECT * FROM payment
+WHERE payment_date BETWEEN '2007-02-01' AND '2007-02-15';
+WHERE amount NOT BETWEEN 8 AND 9;
+WHERE amount BETWEEN 8 AND 9;
+
+--IN statements
+SELECT DISTINCT (amount) FROM payment
+ORDER BY amount;
+SELECT * FROM payment
+WHERE amount NOT IN (0.99, 1.98, 1.99);
+WHERE amount IN (0.99, 1.98, 1.99);
+SELECT * FROM customer
+WHERE first_name NOT IN ('John', 'Jake', 'Julie');
+WHERE first_name IN ('John', 'Jake', 'Julie');
+
+--LIKE statements used to perform pattern matching against string data using wildcards like:
+-- '%' matches any sequence of characters. '_' matches single character
+-- NOTE: LIKE is case sensitive and ILIKE is case insensitive
+SELECT * FROM customer
+WHERE first_name LIKE 'J%'
+AND last_name LIKE '_er%';
+SELECT * FROM customer
+WHERE first_name LIKE '%er%';
+SELECT * FROM customer
+WHERE first_name LIKE 'A%'
+AND last_name NOT LIKE 'B%'
+ORDER BY last_name;
+
+--Challenge: How many payment transactions where greater than $5.00
+SELECT * FROM payment;
+SELECT COUNT(amount) FROM payment
+WHERE amount > 5.00;
+
+--Challenge: How many actors have a first name that starts with the letter P
+SELECT COUNT(*) FROM actor
+WHERE first_name LIKE 'P%';
+
+--Challenge: How many unique distircits are our customers from 
+SELECT COUNT (DISTINCT (district)) FROM address;
+
+--Challenge: Retrieve the list of names from the distinct district mentioned
+SELECT DISTINCT(district) FROM address;
+
+--Challenge: How many films have a rating of R and replacement cost between $5 and $15
+SELECT COUNT (rating) FROM film
+WHERE rating = 'R'
+AND replacement_cost BETWEEN 5 AND 15;
+
+--Challenge: How many films have the word Truman somewhere in the title
+SELECT COUNT (title) FROM film
+WHERE title LIKE '%Truman%';
+
+--Aggregate Functions; takes multiple inputs and return a single output NOTE: can only be applied in SELLECT or HAVING clause
+SELECT * FROM film;
+SELECT MAX(replacement_cost), MIN(replacement_cost) FROM film;
+SELECT COUNT(film_id) FROM film;
+SELECT AVG(replacement_cost) FROM film;
+SELECT ROUND(AVG(replacement_cost), 3) FROM film;
+SELECT SUM(replacement_cost) FROM film;
+
+--GROUP BY; categorical columns are needed to perform a GROUP BY, these categroical columns should descret/non-continous
+--NOTE: GROUP BY clause must appear directly after a FROM or WHERE statement. Columns in SELECT statemnets must appear in GROUP BY statement
+SELECT * FROM payment;
+SELECT customer_id FROM payment
+GROUP BY customer_id
+ORDER BY customer_id;
+SELECT customer_id, SUM(amount) FROM payment
+GROUP BY customer_id
+ORDER BY SUM(amount) ASC;
+SELECT customer_id, COUNT(amount) FROM payment
+GROUP BY customer_id
+ORDER BY COUNT(amount) ASC;
+SELECT customer_id, staff_id, SUM(amount) FROM payment
+GROUP BY staff_id, customer_id
+ORDER BY staff_id, customer_id, SUM(amount)
+SELECT DATE(payment_date), SUM(amount) FROM payment
+GROUP BY DATE(payment_date)
+ORDER BY SUM(amount);
+
+--Challenge; select how many payments was received be staff member 1 & 2 and the max
+SELECT * FROM payment;
+SELECT staff_id, COUNT(amount) FROM payment
+GROUP BY staff_id
+ORDER BY staff_id DESC;
+
+--Challenge; return average replace cost per rating 
+SELECT * FROM film;
+SELECT rating, ROUND(AVG(replacement_cost), 4) FROM film
+GROUP BY rating
+ORDER BY rating DESC;
+
+--Challenge; return customer id's for top 5 customers by total spend
+SELECT * FROM payment;
+SELECT customer_id, SUM(amount) FROM payment
+GROUP BY customer_id
+ORDER BY SUM(amount) DESC
+LIMIT 5;
+
+--HAVING clause; allows for filter after an aggregation has already taken place. HAVING is like a WHERE statement applied after a GROUP BY because WHERE statements occurs before a GROUP BY
+SELECT * FROM payment;
+SELECT customer_id, SUM(amount) FROM payment
+WHERE customer_id NOT IN (184, 87, 477)
+GROUP BY customer_id;
+SELECT customer_id, SUM(amount) FROM payment
+GROUP BY customer_id
+HAVING SUM(amount) > 100;
+SELECT * FROM customer;
+SELECT store_id, COUNT(customer_id) FROM customer
+GROUP BY store_id
+HAVING COUNT(customer_id) > 300;
+
+--Challenge; return customer id's that have >= 40 transactions payments
+SELECT * FROM payment;
+SELECT customer_id, COUNT(payment_id) FROM payment
+GROUP BY customer_id
+HAVING COUNT(payment_id) >= 40;
+
+--Challenge; return customers who have spent > $100 with staff_id NNo. 2
+SELECT * FROM payment;
+SELECT customer_id, staff_id, SUM(amount) FROM payment
+WHERE staff_id = 2
+GROUP BY customer_id, staff_id
+HAVING SUM(amount) > 100;
+
+--Assesment Test
+--Q1. return cistomer id's of custoemrs who spent $110 or more with staff NO.2
+SELECT * FROM payment;
+SELECT customer_id, SUM(amount) FROM payment
+WHERE staff_id = 2
+GROUP BY customer_id
+HAVING sum(amount) >= 110
+ORDER BY customer_id DESC;
+
+--Q2. return number of filmssatrting with letter 'J'
+SELECT * FROM film;
+SELECT COUNT(title) FROM film
+WHERE title LIKE 'J%';
+
+--Q3. return highest customer ID whose name starts with E and address ID < 500
+SELECT * FROM customer;
+SELECT first_name, last_name FROM customer
+WHERE first_name LIKE 'E%'
+AND address_id < 500
+ORDER BY customer_id DESC
+LIMIT 1;
+
+--JOINS; AS clause, different joins(INNER, OUTER, FULL, UNIONS), JOINS lets you combine multiple tables together
+--AS clause; returns alias for coulumn or results. Only used in SELECT statements. Alias new name cannot be used in a WHERE or HAVING clause because the operation happens at the end of script execution
+SELECT COUNT(amount) AS num_transactions FROM payment;
+SELECT customer_id, SUM(amount) AS total_spent FROM payment
+GROUP BY customer_id;
+SELECT customer_id, amount AS new_name FROM payment
+WHERE amount > 2
+
+--INNER JOIN; returns result with the set of records that match in both tables. NOTE: with INNER JOIN table table or column order doesnt matter(symetrical) 
+SELECT payment_id, payment.customer_id, first_name FROM payment
+INNER JOIN customer
+ON payment.customer_id = customer.customer_id;
+
+--FULL OUTER JOIN; returns both tables with complete results and table/column order doesnt matter
+--FULL OUTER JOIN with WHERE statement returns rows unique to either table(rows not found in both tables[opposite of INNER JOIN])
+SELECT * FROM payment;
+SELECT * FROM customer
+FULL OUTER JOIN payment
+ON customer.customer_id = payment.customer_id
+WHERE customer.customer_id IS null
+OR payment.payment_id IS null;
+
+--LEFT OUTER JOIN; returns set of records in the left table and if no match with right table then result shows null.
+--NOTE: Left table is the table selected in the FROM statement, and column/table order DOES matter in this case.
+--LEFT OUTER JOIN with WHERE statements returns rows unique to the left table 
+SELECT * FROM film;
+SELECT * FROM inventory;
+SELECT film.film_id, title, inventory_id, store_id
+FROM film
+LEFT OUTER JOIN inventory ON film.film_id = inventory.film_id
+WHERE inventory.film_id IS null;
+
+--RIGHT OUTER JOIN; returns set of records in the right table and if no match with left table then result shows null
+--NOTE: right table is the table selected in the RIGHT OUTER JOIN statement, and column/table order DOES matter in this case.
+--RIGHT JOIN with WHERE statements returns riws unique to the right table
+SELECT * FROM film;
+SELECT * FROM inventory;
+SELECT film.film_id, title, inventory_id, store_id
+FROM film
+RIGHT OUTER JOIN inventory ON film.film_id = inventory.film_id
+WHERE inventory.film_id IS null;
+
+--UNION; returns combined result-set of two or more SELECT statements. Concatenation of two or more results by pasting them together
+--NOTE: columns names and order must match to effectively combine both tables
+
+--Challenge; return emails of customers who live in california
+SELECT * FROM customer;
+SELECT * FROM address;
+SELECT district, customer.email FROM address
+INNER JOIN customer
+ON address.address_id = customer.address_id
+WHERE district = 'California';
+
+--Challenge; return list of all movies "Nick Whaklberg" has been in (IMPORTANT)
+SELECT * FROM actor;
+SELECT * FROM film;
+SELECT * FROM film_actor;
+SELECT film.title, first_name, last_name FROM film_actor 
+INNER JOIN actor
+ON film_actor.actor_id = actor.actor_id
+INNER JOIN film
+ON film_actor.film_id = film.film_id
+WHERE first_name = 'Nick'
+AND last_name = 'Wahlberg';
+
+--Timestamp and Extract; holds date and time information. Functions like (TIMEZONE, NOW, TIMEOFDAY, CURRENT_TIME, CUURENT_DATE)
+SHOW TIMEZONE;
+SELECT NOW();
+SELECT TIMEOFDAY();
+SELECT CURRENT_TIME;
+SELECT CURRENT_DATE;
+
+--EXTRACT(); statement returns a sub-component of a date value(YEAR,MONTH,DAY,WEEK,QUARTER)
+--AGE(); calculates and returns the current age given a timestamp. calculating age of timestamp in database
+--TO_CHAR(); converts data types to text
+SELECT * FROM payment;
+SELECT EXTRACT(YEAR FROM payment_date) AS year
+FROM payment;
+SELECT AGE(payment_date) FROM payment;
+SELECT TO_CHAR(payment_date, 'MM-DD-YYYY') FROM payment;
+
+--Challenge; return the months which payments occured with full month name
+SELECT * FROM payment;
+SELECT DISTINCT(TO_CHAR(payment_date, 'MONTH')) FROM payment;
+
+--Challenge; return the number of payments that occured on a Monday
+SELECT COUNT(*) FROM payment
+WHERE EXTRACT(dow FROM payment_date) = 1
+
+--Mathematical Functions and Operators; see PostGre SQL documentation
+SELECT * FROM film;
+SELECT ROUND(rental_rate/replacement_cost, 2) *100  AS percent_cost FROM film;
+SELECT 0.1 * replacement_cost AS deposit
+FROM film;
+
+--String Functions and Operators; see PostGre SQL documentation
+SELECT * FROM customer;
+SELECT LENGTH(first_name) FROM customer;
+SELECT first_name || ' ' || last_name AS full_name FROM customer;
+SELECT UPPER(first_name) || ' ' || UPPER(last_name) AS full_name FROM customer;
+SELECT first_name || '.' || last_name || '@gmail.com' AS email_full FROM customer;
+SELECT LOWER(LEFT(first_name,1)) || '.' || LOWER(last_name) || '@gmail.com' AS email_full FROM customer;
+
+--SubQuery; performs a query on the results of another query an din volves two(2) SELECT statements
+--NOTE: In a SubQuery the SELECT statement in brackets runs first
+--EXISTS() operator is used to test for existence of rows in a SubQuery
+SELECT * FROM film;
+SELECT title, rental_rate FROM film
+WHERE rental_rate >
+(SELECT AVG(rental_rate) FROM film);
+
+SELECT * FROM rental;
+SELECT * FROM inventory;
+SELECT film_id, title FROM film
+WHERE film_id IN
+(SELECT inventory.film_id FROM rental
+INNER JOIN inventory ON inventory.inventory_id = rental.inventory_id
+WHERE return_date BETWEEN '2005-05-29' AND '2005-05-30')
+ORDER BY film_id;
+
+SELECT first_name, last_name
+FROM customer AS c
+WHERE EXISTS(SELECT * FROM payment AS p
+			WHERE p.customer_id = c.customer_id AND amount > 11)
+
+--SELF JOIN; query where a table is joined to itself(simply a join of two copies of the same table). Usually usefull for comparing values in a column of rows within the same table
+SELECT * FROM film;
+SELECT f1.title, f2.title, f1.length
+FROM film AS f1
+INNER JOIN film AS f2
+ON f1.film_id != f2.film_id
+AND f1.length = f2.length
+
+--Assesment
+Link to Google Doc with Questions and Expected Results:
+https://docs.google.com/document/d/1wiuYbTQslmfolQWgeVPB356csjK6yqOUBhgC7fM44o8/edit?usp=sharing
+Link to Google Doc with Solutions
+https://docs.google.com/document/d/1swGZ0RG3KKqWqzmsI_qrMgjJ3lt39mtAJqRSMZy6Z-8/edit?usp=sharing
+
+SELECT * FROM cd.bookings;
+SELECT * FROM cd.facilities;
+SELECT * FROM cd.members;
+
+--2
+SELECT * FROM cd.facilities;
+SELECT name, membercost FROM cd.facilities;
+--3
+SELECT * FROM cd.facilities
+WHERE membercost > 0;
+--4
+SELECT facid, name, membercost, monthlymaintenance FROM cd.facilities
+WHERE membercost < 1/50.0 * monthlymaintenance
+AND membercost > 0
+--5
+SELECT * FROM cd.facilities
+WHERE name LIKE '%Tennis%';
+--6
+SELECT * FROM cd.facilities
+WHERE facid IN (1, 5);
+--7
+SELECT memid, surname, firstname, joindate FROM cd.members
+WHERE joindate > '2012-09-01';
+--8
+SELECT DISTINCT(surname) FROM cd.members
+ORDER BY surname ASC
+LIMIT 10; 
+--9
+SELECT MAX(joindate) FROM cd.members;
+--10
+SELECT COUNT(*) FROM cd.facilities
+WHERE guestcost >= 10;
+--11
+SELECT * FROM cd.bookings
+SELECT facid, SUM(slots) AS "Total Slots" FROM cd.bookings
+WHERE starttime BETWEEN '2012-09-01' AND '2012-10-01'
+GROUP BY facid
+ORDER BY SUM(slots);
+--12
+SELECT * FROM cd.bookings;
+SELECT facid, SUM(slots) AS "Total Slots" FROM cd.bookings
+GROUP BY facid
+HAVING SUM(slots) > 1000
+ORDER BY facid ASC;
+--13
+SELECT * FROM cd.facilities
+SELECT * FROM cd.bookings
+SELECT cd.facilities.name, cd.bookings.starttime FROM cd.facilities
+INNER JOIN cd.bookings
+ON cd.facilities.facid = cd.bookings.facid
+WHERE cd.facilities.facid IN (0,1)
+AND cd.bookings.starttime >= '2021-09-21'
+AND cd.bookings.starttime < '2021-09-22'
+ORDER by cd.bookings.starttime ASC;
+--14
+SELECT * FROM cd.members;
+SELECT cd.bookings.starttime FROM cd.members
+INNER JOIN cd.bookings
+ON cd.members.memid = cd.bookings.memid
+WHERE cd.members.firstname = 'David'
+AND cd.members.surname = 'Farrell'
+
+--Primary Key; column or group of columns used to identify a row uniquely in a table(usually unique and non-null)
+--Foreign Key; field or group of fields in a table that uniquely identifies a row in another table. It is a table that references to the primary key of the other table
+  --NOTE: Table with foreign key is Reference/Child table. Table which foreign key references is called Referenced/Parent table
+    --NOTE: A table can have multiple foreign keys
+--Connstraints; rules enforced on data columns on table, to prevent invalid data from being entered into the table.
+	--Column Constraints; applies ot data in a particular column to adhere to certain conditions
+	--Table Constraints; applied to entire table ot adhere to certain conditions
+--COLUMN Constraints:
+	--NOT NULL: constraint ensures a column cannot have NULL value
+	--UNIQUE; constraint ensure that all values in a column are different
+	--PRIMARY Key Constraint; uniquely identifies each row/record in a database table
+	--FOREIGN Key Constraint; applies constraints on data based on columns in other tables
+	--CHECK Constraint; ensures that all values in a column satisfy certain conditions
+	--EXCLUSION Constraint; ensures that if any two rows are compared on the specified column or expression using the specified operator, not all of these comparisons will return TRUE
+--TABLE Constraints:
+	--CHECK(condition); used to check a condition during INSERT or UPDATE (inserting/updating) data
+	--REFERENCES; used to constrain the values stored in the column that must exist in a column in another table
+	--UNIQUE(column_list); forces the values in the columns listed to be unique
+	--PRIMARY KEY(column_list); allows you define primary key that consists of multiple columns
+
+--CREATE TABLE; used to create table
+	--Sequence; special db object that generates a sequence of intergers, often used as the primary key column
+	--SERIAL; creates a sequence object and set the next value generated by sequence as the default value column, used as primary keys cos it automatically logs unique integer entries for you automatically upon insertion
+	--NOTE:if a row is removed form a table, column with SERIAL data type adjust, rather it shows a row was removed
+	--Example: 1,2,3,4,5,6 If row 3 was removed the table will show up as 1,2,4,5,6
+
+CREATE TABLE account(
+	user_id SERIAL PRIMARY KEY,
+	username VARCHAR(50) UNIQUE NOT NULL,
+	password VARCHAR(50) NOT NULL,
+	email VARCHAR(250) UNIQUE NOT NULL,
+	created_on TIMESTAMP NOT NULL,
+	last_login TIMESTAMP
+);
+CREATE TABLE job(
+	job_id SERIAL PRIMARY KEY,
+	job_name VARCHAR(200) UNIQUE NOT NULL	
+);
+CREATE TABLE account_job(
+	user_id INTEGER REFERENCES account(user_id),
+	job_id INTEGER REFERENCES job(job_id),
+	hire_date TIMESTAMP
+);
+
+--INSERT INTO; allows you to add rows to a table
+	--NOTE: inserted rows values must match up for the table including constraints and SERIAL columns do no tneed to be provided a value
+	--NOTE: when a statement fails during insert the SERIAL counts extra row for the failed attempt but shows it as a remooved row
+INSERT INTO account(username, password, email, created_on)
+VALUES
+('Jose', 'password', 'jose@mail.com', CURRENT_TIMESTAMP);
+SELECT * FROM account;
+
+INSERT INTO job(job_name)
+VALUES
+('Astronaut'),
+('CAstronaut'),
+('President');
+SELECT * FROM job;
+
+INSERT INTO account_job(user_id, job_id, hire_date)
+VALUES
+(1,1,CURRENT_TIMESTAMP)
+RETURNING *
+
+--UPDATE; allows for the chnanging of values of the columns in a table
+	--NOTE: SET can be based on another column (i.e SET colunm_A = Coulumn_B)
+	--NOTE: Update can also use another tables values (UPDATE join)
+	--RETURNING; returns affected rows after using the SET statement(SET colunm_A = Coulumn_B RETURNING column_id)
+UPDATE account
+SET last_login = CURRENT_TIMESTAMP
+RETURNING *
+
+UPDATE account
+SET last_login = created_on
+RETURNING *
+
+UPDATE account_job  --UPDATE JOIN
+SET hire_date = account.created_on
+FROM account
+WHERE account_job.user_id = account.user_id
+RETURNING *
+
+UPDATE account
+SET last_login = CURRENT_TIMESTAMP
+RETURNING *
+
+--DELETE; used to remove rows from a table either single or all rows. 
+	--NOTE: DELETE can also be used to delete rows based on their presence in other tables.
+INSERT INTO job(job_name)
+VALUES
+('Cowboy')
+RETURNING *;
+
+DELETE FROM job
+WHERE job_name = 'CAstronaut'
+RETURNING job_id, job_name;
+SELECT * FROM job;
+
+--ALTER TABLE; allows you make changes in existing table structure like
+	--Adding, droppping or renaming columns
+	--Changing a columns data type
+	--Set DEFAULT values for a column
+	--Add CHECK constraints
+	--Rename table
+		--NOTE:Use the DROP to remove a constraint & use SET to add a constraint
+	
+CREATE TABLE information(
+	info_id SERIAL PRIMARY KEY,
+	title VARCHAR(500) NOT NULL,
+	person VARCHAR(50) NOT NULL UNIQUE
+);
+ALTER TABLE information
+RENAME TO new_info -- renames table name
+ALTER TABLE new_info
+RENAME COLUMN person TO people;
+SELECT * FROM new_info;
+
+ALTER TABLE new_info
+ALTER COLUMN people DROP NOT NULL
+INSERT INTO new_info(title)
+VALUES
+('some new title');
+SELECT * FROM new_info;
+
+--DROP; lets you completey remove a column from a table, will automatically remove all the indexes and constraints involving the column
+	--NOTE: it does not remove columns used in views, triggers or stored procedures w/out the additional CASCADE clause
+	--NOTE: when using the drop column, always use IF EXIST so statement does not error out if column is missing already
+ALTER TABLE new_info
+DROP COLUMN IF EXISTS people
+SELECT * FROM new_info;
+
+--CHECK; this contraint allows you create more customized constraints that adhere to certain condition(like making sure integers entered are below a threshold)
+CREATE TABLE employees(
+emp_id SERIAL PRIMARY KEY,
+	first_name VARCHAR(50) NOT NULL,
+	last_name VARCHAR(50) NOT NULL,
+	birthdate DATE CHECK (birthdate > '1900-01-01'),
+	hire_date DATE CHECK (hire_date > birthdate),
+	salary INTEGER CHECK (salary > 0)
+);
+INSERT INTO employees(
+	first_name,
+	last_name,
+	birthdate,
+	hire_date,
+	salary)
+VALUES
+('Ayla',
+'Ayden',
+'1990-11-03',
+'2010-01-01',
+100)
+SELECT * FROM employees
+
+--Assesment
+CREATE TABLE students(	
+	student_id SERIAL PRIMARY KEY,
+	first_name VARCHAR(500) NOT NULL,
+	last_name VARCHAR(500) NOT NULL,
+	homeroom_number INTEGER NOT NULL,
+	phone VARCHAR(50) UNIQUE NOT NULL,
+	email VARCHAR(500) UNIQUE,
+	graduation_year DATE NOT NULL
+)
+ALTER TABLE students
+ALTER COLUMN email DROP NOT NULL;
+ALTER TABLE students
+ALTER COLUMN graduation_year TYPE VARCHAR(200)--converted graduation year to INTEGER by first converting to VARCHAR
+ALTER TABLE students
+ALTER COLUMN graduation_year TYPE INTEGER
+USING (graduation_year:: INTEGER);
+
+INSERT INTO students(
+	first_name,
+	last_name,
+	homeroom_number,
+	phone,
+	graduation_year)
+VALUES
+	('Mark',
+	 'Watney',
+	 '5',
+	 '777-555-1234',
+	 '2035');
+SELECT * FROM students
+
+CREATE TABLE teachers(
+	teacher_id SERIAL PRIMARY KEY,
+	first_name VARCHAR(500) NOT NULL,
+	last_name VARCHAR(500) NOT NULL,
+	homeroom_number INTEGER NOT NULL,
+	deoartment VARCHAR(50) NOT NULL,
+	email VARCHAR(500) UNIQUE NOT NULL,
+	phone VARCHAR(50) UNIQUE NOT NULL
+)
+INSERT INTO teachers(
+	first_name,
+	last_name,
+	homeroom_number,
+	deoartment,
+	email,
+	phone)
+VALUES
+	('Jonas',
+	 'Salk',
+	 '5',
+	 'Biology',
+	 'jsalk@school.org',
+	 '777-555-4321'
+	);
+SELECT * FROM teachers
+
+
+--CASE; statement executes only when certain conditions are met. Can be either CASE stament or CASE expressions
+--NOTE: CASE expression syntax first evaluates an expression then compares the result with each value in the when clauses sequentially
+SELECT * FROM customer;
+SELECT customer_id,
+	CASE
+		WHEN (customer_id <=100) THEN 'Premium'
+		WHEN (customer_id BETWEEN 100 AND 200) THEN 'Plus'
+		ELSE 'Normal'	
+	END
+	AS customer_class
+FROM customer;
+
+SELECT customer_id,
+	CASE customer_id
+		WHEN 2 THEN 'Winner'
+		WHEN 5 THEN 'Second Place'
+		ELSE 'Normal'	
+	END
+	AS raffle
+FROM customer;
+
+SELECT * FROM film; 
+SELECT
+	SUM(CASE rental_rate -- adds up all the times we had 0.99 on the 'number_of_bergains' column
+		WHEN 0.99 THEN 1
+		ELSE 0
+	END)
+	AS number_of_bergains
+FROM film;
+
+SELECT
+	SUM(CASE rental_rate
+		WHEN 0.99 THEN 1
+		ELSE 0
+	END)
+	AS bargains,
+	SUM(CASE rental_rate
+	   WHEN 2.99 THEN 1
+	   ELSE 0
+	END)
+	AS regular,
+	SUM(CASE rental_rate
+	   WHEN 4.99 THEN 1
+	   ELSE 0
+	END)
+	AS premium
+FROM film;
+
+--Challenge
+SELECT * FROM film;
+SELECT
+	SUM(CASE rating
+		WHEN 'R' THEN 1
+		ELSE 0
+	END)
+	AS r,
+	SUM(CASE rating
+	   WHEN 'PG' THEN 1
+	   ELSE 0
+	END)
+	AS pg,
+	SUM(CASE rating
+	   WHEN 'PG-13' THEN 1
+	   ELSE 0
+	END)
+	AS pg13
+FROM film;
+
+--COALESCE; accepts an unlimited number of arguments and returns the first argument that is not NULL and returns NULL if all arguments are null.
+--NOTE: COALESCE is useful when querying a table that contains null values and substituting it with another value
+--SELECT column1, (column2 - COALESCE(column3, 0) FROM table;<--this selects contents of column3 if its not NULL and selects '0' if the contents of column 3 is null				 
+SELECT * FROM film;
+SELECT COALESCE(null, title) AS title FROM film;
+ -- query selects 'title' in brackets becuase 'null' doest exist				 				 
+--CAST; lets you convert 1 data type into another
+SELECT CAST('5' AS INTEGER) AS new_int
+SELECT '10'::INTEGER;
+SELECT * FROM rental;
+SELECT CHAR_LENGTH(CAST (inventory_id AS VARCHAR),				 
+FROM rental;				 
+				 
+--NULLIF; function takes in 2 inputs and returns NULL if both are equal, otherwise it returns the first arguments passed
+--Example NULLIF(1,1) returns NULL & NULLIF(1,2) returns 1
+CREATE TABLE depts(
+first_name VARCHAR(50),
+department VARCHAR(50));			
+				   
+INSERT INTO depts(
+first_name,
+department
+)			 
+VALUES
+('Vinton', 'A'),
+('Lauren','A'),
+('Claire','B');
+SELECT * FROM depts;				   	
+				   
+SELECT (
+SUM(CASE WHEN department = 'A' THEN 1 ELSE 0 END)/
+SUM(CASE WHEN department = 'B' THEN 1 ELSE 0 END)	
+) AS department_ratio
+FROM depts;
+
+DELETE FROM depts
+WHERE department = 'B';
+
+SELECT (
+SUM(CASE WHEN department = 'A' THEN 1 ELSE 0 END)/
+NULLIF(SUM(CASE WHEN department = 'B' THEN 1 ELSE 0 END),0)	
+) AS department_ratio
+FROM depts;
+
+--VIEW; database object which is a stored query. Only stores a query
+SELECT * FROM address;				
+
+CREATE VIEW customer_info AS --stores underlying query as 'customer_info'
+SELECT first_name, last_name, address FROM customer
+INNER JOIN address
+ON customer.address_id = address.address_id;
+SELECT * FROM customer_info;
+
+CREATE OR REPLACE VIEW customer_info AS --modifies the 'customer_info
+SELECT first_name, last_name, address, district FROM customer
+INNER JOIN address
+ON customer.address_id = address.address_id;
+SELECT * FROM customer_info;
+
+DROP VIEW IF EXISTS customer_info -- checks if view exists before dropping
+ALTER VIEW customer_info RENAME TO c_info;
+SELECT * FROM c_info;
+ 
+   
+				   
+				   
+
+				   
+				   
+
+				   
+				   
+
+				   
+					   
+				 
+				   
+
+				   
+				   
+				   
+				 
+				 
+				 
+				 
+				 
+				 
+				 
+				 
+				 
+				 
+
+
+
